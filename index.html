@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ötletgép – Konverzió Pro</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d2129; --line:#2a2f3a;
+    --txt:#e8eaf0; --muted:#9aa3b2; --accent:#5b8cff; --accent2:#7c5bff;
+    --green:#33d29b; --amber:#ffb454; --chip:#232834;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%,#1a2030 0,var(--bg) 60%);color:var(--txt);line-height:1.55}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+  header h1{font-size:26px;margin:0 0 4px;letter-spacing:-.5px}
+  header h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{color:var(--muted);margin:0 0 18px;font-size:15px;max-width:760px}
+  .tabs{display:flex;gap:8px;margin:18px 0 14px;flex-wrap:wrap}
+  .tab{padding:11px 18px;border-radius:999px;background:var(--panel);border:1px solid var(--line);
+    color:var(--muted);cursor:pointer;font-size:14px;font-weight:600;transition:.15s}
+  .tab.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+  .tab:hover:not(.active){color:var(--txt);border-color:#3a4150}
+  .search{width:100%;padding:13px 16px;border-radius:var(--radius);background:var(--panel);
+    border:1px solid var(--line);color:var(--txt);font-size:15px;margin-bottom:6px;outline:none}
+  .search:focus{border-color:var(--accent)}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column}
+  .card h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:9px;line-height:1.3}
+  .ico{font-size:19px;flex:0 0 auto}
+  .cat{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--accent);
+    font-weight:700;margin-bottom:10px}
+  .flag{display:inline-block;font-size:10.5px;font-weight:700;color:#05201a;background:var(--amber);
+    border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle;letter-spacing:.3px}
+  .instr{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;margin:6px 0 12px}
+  .instr .lab{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--green);font-weight:700;display:block;margin-bottom:6px}
+  .instr p{margin:0 0 9px;font-size:13.5px;color:#d4d9e4;white-space:pre-wrap}
+  .copy{background:var(--chip);border:1px solid var(--line);color:var(--muted);border-radius:8px;
+    padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;transition:.15s}
+  .copy:hover{color:#fff;border-color:var(--accent);background:var(--accent)}
+  .copy.done{background:var(--green);border-color:var(--green);color:#05201a}
+  .meta{font-size:12.5px;color:var(--muted);padding:5px 0;border-top:1px solid var(--line)}
+  .meta:first-of-type{border-top:none}
+  .meta b{color:var(--txt);font-weight:600}
+  .meta .k{display:inline-block;min-width:128px;color:var(--accent);font-weight:600}
+  .skill-chip{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--chip);border:1px solid #3a4a7a;
+    border-radius:6px;padding:2px 8px;font-size:12.5px;color:var(--accent2);cursor:pointer;transition:.15s}
+  .skill-chip:hover{border-color:var(--accent2);background:#252a3a}
+  .copy-ico{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:24px;height:22px;
+    background:var(--chip);border:1px solid var(--line);border-radius:6px;color:var(--muted);cursor:pointer;
+    vertical-align:middle;transition:.15s;padding:0}
+  .copy-ico:hover{color:#fff;border-color:var(--accent);background:var(--accent)}
+  .copy-ico.done{background:var(--green);border-color:var(--green);color:#05201a;font-size:13px;font-weight:700}
+  .soon{font-size:12.5px;color:var(--muted);font-style:italic}
+  .soon:before{content:"⏳ "}
+  .jump{color:var(--accent);cursor:pointer;font-size:12.5px;font-weight:600;text-decoration:none;border-bottom:1px dashed var(--accent)}
+  .jump:hover{color:#fff}
+  .auto-badge{display:inline-block;font-size:10.5px;font-weight:700;color:#05201a;
+    background:linear-gradient(90deg,var(--green),#5be0b0);border-radius:6px;padding:2px 7px;margin-left:6px;
+    vertical-align:middle;letter-spacing:.3px;white-space:nowrap}
+  .live-badge{display:inline-block;font-size:10.5px;font-weight:700;color:#05201a;background:var(--green);
+    border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle;letter-spacing:.3px;white-space:nowrap}
+  .live-strip{background:linear-gradient(90deg,rgba(51,210,155,.14),rgba(51,210,155,.04));
+    border:1px solid #2f6b53;border-radius:12px;padding:13px 16px;margin:0 0 16px}
+  .live-strip h4{margin:0 0 9px;font-size:13.5px;color:var(--green);letter-spacing:.2px}
+  .live-strip .row{display:flex;flex-wrap:wrap;gap:8px}
+  .live-strip .pill{font-size:12.5px;background:#14261f;border:1px solid #2f6b53;border-radius:999px;
+    padding:6px 13px;color:#cdeede;text-decoration:none;display:inline-block}
+  a.live-strip-link:hover{border-color:var(--green);background:#1b3328;color:#fff}
+  .res-link{color:var(--green);text-decoration:none;border-bottom:1px dashed var(--green)}
+  .res-link:hover{color:#fff}
+  .meta-wrap{margin-top:auto}
+  /* upsell */
+  .signals{margin:6px 0 12px;padding:0;list-style:none}
+  .signals li{font-size:13.5px;color:#d4d9e4;padding:5px 0 5px 22px;position:relative}
+  .signals li:before{content:"👂";position:absolute;left:0;top:4px;font-size:13px}
+  .pitch{background:linear-gradient(90deg,rgba(91,140,255,.12),rgba(124,91,255,.12));
+    border:1px solid #34406b;border-radius:10px;padding:11px 13px;margin:6px 0;font-size:13.5px}
+  .pitch .lab{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--accent);font-weight:700;display:block;margin-bottom:3px}
+  .value{font-size:12.5px;color:var(--green);margin-top:auto;padding-top:10px}
+  .empty{color:var(--muted);text-align:center;padding:40px;font-size:15px;grid-column:1/-1}
+  footer{margin-top:40px;color:var(--muted);font-size:12.5px;text-align:center}
+  .mode-intro{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13.5px;color:var(--muted)}
+  .mode-intro b{color:var(--txt)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span>AI Ötletgép</span> &nbsp;·&nbsp; Konverzió Pro</h1>
+    <p>A lényeg a szemléletváltás: <b>már nem a fiókon dolgozunk, hanem instruáljuk az AI-t, hogy ő dolgozzon helyettünk.</b> Bal mód: add ki a feladatot a Claude-nak, ő elvégzi (connectorokkal). Jobb mód: vedd észre, mit adhatunk el az ügyfélnek.</p>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-mode="ppc" onclick="setMode('ppc')">📈 PPC munka</div>
+    <div class="tab" data-mode="admin" onclick="setMode('admin')">🛠️ Háttér &amp; admin</div>
+    <div class="tab" data-mode="sell" onclick="setMode('sell')">💡 Mit értékesíthetsz?</div>
+  </div>
+
+  <input id="search" class="search" placeholder="Keress feladatra… (pl. mérés, riport, anomália, kulcsszó, kreatív)">
+  <p class="hint" id="hint"></p>
+
+  <div id="intro" class="mode-intro"></div>
+
+  <div class="live-strip">
+    <h4>✅ Már használható most — kész eszközt tudunk adni a csapatnak</h4>
+    <div class="row">
+      <span class="pill">📊 Google Ads + GA4 olvasás — bekötve, élő adatból dolgozik</span>
+      <a class="pill live-strip-link" href="https://drive.google.com/file/d/1nGS6_pAbYsvW7FruCEEqFf5GnKD_xTOI/view" target="_blank">🖥️ Ügyfél-dashboard — kész prompt a Drive-on ↗</a>
+      <a class="pill live-strip-link" href="https://drive.google.com/file/d/1q4jFOLffnMTlZPNznxIHc8GhJbz8HxQ_/view" target="_blank">📨 Napi teendő-digest — <code>/konverzio-pro-daily-digest</code> ↗</a>
+    </div>
+  </div>
+
+  <div id="grid" class="grid"></div>
+
+  <footer>AI Ötletgép v7 · Konverzió Pro belső eszköz · A <b style="color:var(--green)">✅ elérhető</b> jelölés = kész eszközt tudunk adni hozzá a csapatnak (nem csak terv). A „Csináld meg helyettem" feladatoknál mindig add meg a konkrét fiókot/ügyfelet és a [SZÖGLETES] mezőket. Ahol skill van, másold a /nevét — egy az egyben kiköpi az eredményt. A „🔌 Mi kell hozzá" beállított connectort jelent, nem a kolléga belépését.<br>📁 <a class="res-link" href="https://drive.google.com/drive/folders/1QFziE6ejGRljqMi3OJD8hgg97-sbwKEb" target="_blank">Közös AI-eszközök mappa (Drive) — kész promptok & skillek ↗</a></footer>
+</div>
+
+<script>
+/* ================= B MÓD: amit a Claude ELVÉGEZ helyetted ================= */
+/* mező: group(ppc|admin), cat, ico, title, instr, tool, needs, skill(null=készül), extra, note?, setup?, auto? */
+const WORK = [
+/* ===== PPC MUNKA ===== */
+{group:"ppc", cat:"Fiók-művelet", ico:"✅", title:"Új Google Ads fiók: mérés-ellenőrzés",
+ instr:"Új Google Ads fiókot kaptam: [FIÓK NEVE / AZONOSÍTÓ]. Ellenőrizd helyettem a mérést: milyen konverziók vannak beállítva, jól tüzelnek-e, honnan jön az adat (GA4 import / Google tag / offline import), van-e duplikált vagy elavult konverzió, és a fő konverzió primary-e. Készíts súlyozott hibalistát és javasolj javítást mindegyikre.",
+ tool:"Cowork",
+ needs:"Google Ads connector beállítva — VAGY Claude in Chrome bővítmény a böngészőben. A kolléga sima fiók-belépése önmagában NEM elég, a Claude-nak rá kell látnia a fiókra.",
+ skill:null,
+ live:true,
+ extra:"Fiók-azonosító, mi a fő konverziós cél (lead/vásárlás)",
+ note:"A Google Ads + GA4 olvasás már be van kötve — élő adatból megy, nem régi doksiból.",
+ setup:"Google Ads connector beállítása"},
+
+{group:"ppc", cat:"Fiók-művelet", ico:"🚨", title:"Napi anomália-őr",
+ instr:"Állíts be egy figyelőt, ami minden Google + Meta fiókot naponta reggel átnéz: jelezd a CPL-ugrást [>20%], a napi budgethez mért túlköltést, az elutasított hirdetést és a leállt kampányt. Csak az eltéréseket küldd, a #[csatorna] Slack-csatornába, rövid listában.",
+ tool:"Cowork (ütemezett task); önálló, mindig futó monitorhoz Code.",
+ needs:"Google Ads + Meta Ads connector + Slack connector — VAGY Claude in Chrome a böngészőben.",
+ skill:null,
+ extra:"Küszöbértékek (%), Slack-csatorna neve",
+ setup:"Google Ads connector beállítása",
+ auto:"Minden reggel, automatikusan"},
+
+{group:"ppc", cat:"Fiók-művelet", ico:"🧹", title:"Negatív kulcsszó-takarítás",
+ instr:"Húzd le a [FIÓK] kereső-kifejezéseit az elmúlt [30] napra. Jelöld az irreleváns és pénzt égető kifejezéseket, csoportosítsd, és készíts negatív kulcsszó listát jóváhagyásra. Indokold soronként, miért tenném negatívra.",
+ tool:"Cowork",
+ needs:"Google Ads connector — VAGY Claude in Chrome a böngészőben.",
+ skill:null,
+ extra:"Melyik fiók, milyen időtáv",
+ setup:"Google Ads connector beállítása"},
+
+{group:"ppc", cat:"Fiók-művelet", ico:"🚀", title:"Kampány indítása / módosítása",
+ instr:"Állíts össze egy Meta kampányt: [CÉL pl. leadgen], [NAPI/TELJES BUDGET], [CÉLKÖZÖNSÉG], [KREATÍV + szöveg]. Építsd fel a kampány–adset–ad struktúrát és indítsd el PAUSED állapotban jóváhagyásra (vagy élesben, ha azt mondom).",
+ tool:"Cowork",
+ needs:"Meta Ads connector beállítva (a hirdetési fiók hozzákötve) — VAGY Claude in Chrome a böngészőben.",
+ skill:null,
+ extra:"Cél, budget, közönség, kreatív/szöveg"},
+
+{group:"ppc", cat:"Elemzés", ico:"📉", title:"Teljesítmény-elemzés: mi nem megy",
+ instr:"Húzd le a [FIÓK] elmúlt [30] napos teljesítményét kampány/adset bontásban, és mondd meg, hol szivárog a budget. Adj 5 priorizált optimalizálási lépést, mindegyiknél a várható hatással.",
+ tool:"Cowork",
+ needs:"Google Ads / Meta Ads connector — VAGY Claude in Chrome a böngészőben.",
+ skill:"/campaign-performance",
+ live:true,
+ extra:"Fiók, időtáv, fő KPI",
+ note:"Élő adatból dolgozik (Google Ads + GA4 olvasás bekötve). A /campaign-performance skillhez a hirdetési plugin (adspirer) belépés kell — anélkül sima Cowork-instrukcióként is megy.",
+ setup:"Google Ads connector beállítása"},
+
+{group:"ppc", cat:"Elemzés", ico:"🤖", title:"Automata kampányoptimalizálás (javaslat + 1-katt jóváhagyás)",
+ instr:"Állíts be minden ügyfél minden fiókjához egy figyelőt: ha egy megadott eredményt nem érünk el [pl. CPL > X / ROAS < Y / lead < Z hetente], jelezz proaktívan a kollégának, és hozz konkrét módosítási javaslatokat (mit, miért, várható hatás). A kolléga jóváhagyása után egyetlen jelzésre végezd el a módosításokat a fiókban.",
+ tool:"Cowork (ütemezett figyelő + jóváhagyásos végrehajtás); robusztus, mindig futó verzióhoz Code.",
+ needs:"Google Ads / Meta Ads connector — VAGY Claude in Chrome a böngészőben.",
+ skill:null,
+ extra:"Ügyfél, fiók, célküszöbök (CPL/ROAS/lead), mi módosítható jóváhagyás nélkül vs. csak engedéllyel",
+ note:"A Teljesítmény-elemzés automata, proaktív párja: nem te indítod — magától szól és javasol, te jóváhagysz.",
+ setup:"Google Ads connector beállítása",
+ auto:"Folyamatosan figyel; eltérésnél jelez"},
+
+{group:"ppc", cat:"Riport", ico:"📊", title:"Interaktív ügyfél-dashboard",
+ instr:"Készíts egy élő, interaktív riport-oldalt [ÜGYFÉL] összes fiókjából (Google + Meta): költés, lead/konverzió, CPL, ROAS és trend. Frissüljön, amikor megnyitják. Heti fő nézet + napi bontás. Az ügyfélnek átadható, saját felületen.",
+ tool:"Code (ügyfélnek átadható, hosztolt, egyedi web-app). Belső gyors nézethez Cowork-artifact is elég.",
+ needs:"Google Ads + Meta connector az adathoz; hoszting az átadható verzióhoz.",
+ skill:null,
+ live:true,
+ resource:{label:"PPC kontrollpult — kész, önbeálló prompt (Drive)", url:"https://drive.google.com/file/d/1nGS6_pAbYsvW7FruCEEqFf5GnKD_xTOI/view"},
+ extra:"Ügyfél, mely fiókok, mely KPI-k, milyen bontás",
+ note:"KÉSZ eszköz: a Drive-on lévő PPC kontrollpult prompt önmagában legyárt egy heti meeting-dashboardot bármelyik fiókra (előbb rákérdez a fiókra + KPI-ra). Ügyfélnek átadható, egyedi verzióhoz Code kell."},
+
+{group:"ppc", cat:"Riport", ico:"🗓️", title:"Heti riport teljesen automatán",
+ instr:"Töltsd ki [ÜGYFÉL] heti riportját az előző teljes hét (hétfő–vasárnap) adataival (Google + Meta költés és lead), és küldj Slack-értesítést. Fusson minden hétfőn, emberi indítás nélkül, a kimaradt heteket pótold.",
+ tool:"Cowork (ütemezett task); egyedi ügyfél-logikához Code is kellhet.",
+ needs:"Google Ads + Meta connector, riport-tábla (Sheet/CRM), Slack connector — VAGY Claude in Chrome.",
+ skill:null,
+ extra:"Ügyfél, bontás, melyik tábla/Slack",
+ setup:"Google Ads connector beállítása",
+ auto:"Minden hétfőn, automatikusan"},
+
+{group:"ppc", cat:"Háttér: SEO", ico:"📝", title:"SEO tartalom feltöltés + optimalizálás",
+ instr:"Kösd a [ÜGYFÉL] weboldalát / CMS-ét, és írj + tölts fel [X] SEO-cikket / termékleírást a [KULCSSZAVAKRA]. Optimalizáld a meglévő oldalakat (title, meta, belső linkelés), és hozz aktív javaslatokat. A végén listázd, mit töltöttél fel és mit módosítottál.",
+ tool:"Code (egyedi CMS-connector) vagy Claude in Chrome. A tartalom megírása Cowork.",
+ needs:"CMS-hozzáférés. WordPresshez nincs kész connector → egyedi (Code) vagy böngésző (Chrome). Feedhez Merchant Center hozzáférés.",
+ skill:null,
+ extra:"Kulcsszavak, mennyiség, hangnem",
+ note:"Csak ahol már SEO-t szolgáltatunk — ez a háttérmunka, nem külön eladott AI.",
+ setup:"Egyedi connector építése (ha nincs kész MCP)"},
+
+{group:"ppc", cat:"Háttér: Email", ico:"📧", title:"Hírlevél-flow-k megépítése",
+ instr:"Építsd meg [ÜGYFÉL] hírlevél-flow-jait (welcome, kosárelhagyó, reaktiváló) a [Klaviyo/eszköz]-ban: szövegek, szegmensek, időzítés, elágazások. Hozd kész állapotba jóváhagyásra.",
+ tool:"Cowork (ha van Klaviyo connector); összetett egyedi rendszerhez Code.",
+ needs:"Klaviyo connector (vagy az adott email-eszköz connectora) — VAGY Claude in Chrome.",
+ skill:null,
+ extra:"Mely flow-k, hangnem, ajánlat",
+ note:"Az ügyfélnek email-automatizációt adunk el — mi AI-jal csináljuk a hátteret."},
+
+{group:"ppc", cat:"Háttér: Kreatív", ico:"🎨", title:"Hirdetési kreatív legyártás",
+ instr:"Generálj [X] hirdetési vizuál-koncepciót / termékfotót ehhez: [TERMÉK], és készítsd el Canvában kész poszt formában a [MÉRET] mérethez. Hangnem/stílus: [STÍLUS].",
+ tool:"Cowork",
+ needs:"Canva connector beállítva a Cowork-ban (+ képgenerálás).",
+ skill:null,
+ extra:"Termék, méret(ek), stílus, ráírt szöveg"},
+
+/* ===== HÁTTÉR & ADMIN ===== */
+{group:"admin", cat:"Admin", ico:"🗒️", title:"Feladatok felvezetése MiniCRM-ben",
+ instr:"Állíts be egy automatizmust: valahányszor új Fireflies meeting-jegyzőkönyv készül, nézd át a TELJES átiratot és a fő jegyzeteket, és vezesd át a belőlük adódó konkrét teendőket a MiniCRM-be — mindenkinek a SAJÁT MiniCRM-fiókjában, a releváns projekthez (feladat, felelős, határidő). Ne hozz duplikátumot. FONTOS: SOHA ne a Fireflies beépített, személyenkénti action-item listáját használd — az gyenge; te magad olvasd ki a feladatokat az átiratból.",
+ tool:"Cowork (eseményre futó / ütemezett automatizmus)",
+ needs:"Fireflies connector + MiniCRM connector beállítva.",
+ skill:null,
+ extra:"Melyik projekthez kötjük az adott ügyfelet, határidő-logika",
+ note:"A Fireflies saját 'action items' listáját szándékosan kihagyjuk — a Claude az átiratból dolgozik, az jobb.",
+ auto:"Minden új Fireflies-jegyzőkönyvnél"},
+
+{group:"admin", cat:"Admin", ico:"📥", title:"Bejövő email-rendezés (triage)",
+ instr:"Állíts be egy automatizmust, ami naponta átnézi a bejövő emailjeimet: csoportosítsd téma szerint, jelöld a sürgőset és a rám tartozót, és írj draft választ a rutin-kérdésekre (csak draft, ne küldd el). Ne kelljen külön kérnem.",
+ tool:"Cowork (ütemezett task)",
+ needs:"Gmail connector — VAGY Claude in Chrome a böngészőben.",
+ skill:null,
+ extra:"Milyen hangnem a draftokban, mely címkék fontosak",
+ auto:"Naponta, automatikusan"},
+
+{group:"admin", cat:"Admin", ico:"📨", title:"Napi teendő-digest (személyenként, reggel)",
+ instr:"Állíts be egy minden reggel futó automatizmust, ami MINDEN kollégának KÜLÖN, privát Slack-DM-ben elküldi a saját aznapi teendőit egy helyen: (1) megválaszolatlan emailek, amikre válasz vár tőle; (2) Slacken rá váró / neki címzett üzenetek; (3) MiniCRM: mai lejáró és folyamatban lévő teendők + közelgő projekt-határidők; (4) az elmúlt 2 munkanap meetingjeiből kieső teendők (a TELJES Fireflies-átiratból, sosem az AI-note-ból). A konkrét, egyértelmű teendőket fel is viszi a MiniCRM-be a megfelelő projekthez, duplázás nélkül.",
+ tool:"Cowork (ütemezett task, minden reggel)",
+ needs:"Gmail + Slack + MiniCRM + Fireflies connector (mindenkinek a sajátja) + a közös digest-bot.",
+ skill:"/konverzio-pro-daily-digest",
+ live:true,
+ resource:{label:"Kész skill letöltése (Drive)", url:"https://drive.google.com/file/d/1q4jFOLffnMTlZPNznxIHc8GhJbz8HxQ_/view"},
+ extra:"Szinte semmi — a skill magától feloldja a saját azonosítóidat; telepítsd, majd mondd: »állítsd be a napi digestem«.",
+ note:"KÉSZ eszköz: kiosztva a #general-ben és a Drive-on. Privát DM-ben jön, a »Mai teendők összefoglaló« bot nevében.",
+ auto:"Minden reggel (magyar idő)"},
+
+{group:"admin", cat:"Admin", ico:"🗂️", title:"Drive-mapparendezés (ügyfélmappák)",
+ instr:"Állíts be egy automatizmust, ami külön kérés nélkül, rendszeresen a megfelelő ügyfélmappába rendezi minden ügyfél anyagait, minden kollégánál — a mappa-szabályunk szerint (Agrianna / SolarClean / Oktotrade-Eurogarázskapu). A végén jelezd, mit mozgattál hova.",
+ tool:"Claude in Chrome (a Drive-connector nem MOZGAT fájlt, csak létrehoz/másol) — ütemezve.",
+ needs:"Claude in Chrome böngésző-hozzáférés a Drive-hoz.",
+ skill:null,
+ extra:"Milyen logika alapján sorolja be a fájlokat",
+ note:"Mappa-szabály: minden ügyfél-fájl a saját ügyfélmappájába.",
+ auto:"Rendszeresen, automatikusan"},
+
+{group:"admin", cat:"Értékesítés-híd", ico:"🎯", title:"Heti AI-upsell felmérés ügyfelenként",
+ instr:"Állíts be egy heti automatizmust, ami ügyfelenként átnézi az aktuális folyó munkát — hirdetési fiókok állapota, emailek, meeting-átiratok, az ügyféllel kapcsolatos Slack-üzenetek —, és kilistázza a kollégának, mit lehetne AI-alapon értékesíteni az adott ügyfélnek, vagy mi javítaná az eredményeit. Ahol nincs valódi lehetőség, ne erőltess. Interaktív módban vegyél végig velem egy konkrét ügyfelet.",
+ tool:"Cowork (ütemezett, heti) + interaktív mód chatben.",
+ needs:"Ads connector(ok), Gmail, Fireflies, Slack connector.",
+ skill:null,
+ extra:"Mely ügyfelek, milyen küszöb felett jelezzen lehetőséget",
+ note:"Híd az 'Értékesítés' fülhöz: ott vannak a konkrét megoldások és pitch-mondatok az itt felismert lehetőségekhez.",
+ auto:"Hetente, ügyfelenként"},
+
+{group:"admin", cat:"Beüzemelés", ico:"🔗", title:"Google Ads connector beállítása",
+ instr:"Segíts beállítani a Google Ads hozzáférést a Claude-hoz: vezess végig lépésről lépésre, kösd össze a hirdetési fiókot, és a végén ellenőrizd egy próba-lekérdezéssel, hogy a Claude tényleg látja-e az adataimat.",
+ tool:"Cowork (Beállítások → Connectors), vagy Claude in Chrome alternatívaként.",
+ needs:"Bejelentkezés a meglévő adspirer vagy Supermetrics pluginba (mindkettő ad Google Ads-hozzáférést). Ha egyik sem jó: Claude in Chrome a böngészős fiókhoz.",
+ skill:null,
+ extra:"Melyik fiókhoz, melyik úton mennél (adspirer / Supermetrics / Chrome)",
+ note:"Nincs különálló 'Google Ads MCP' — a hozzáférés a fenti pluginok valamelyikén keresztül megy. Szólj, és élőben végigviszlek a bekötésen."},
+
+{group:"admin", cat:"Beüzemelés", ico:"🌐", title:"Claude in Chrome beüzemelése",
+ instr:"Segíts beüzemelni a Claude in Chrome bővítményt, hogy a böngészőben tudjon helyettem dolgozni olyan felületeken, amikhez nincs kész connector. Vezess végig a telepítésen és egy próbafeladaton.",
+ tool:"Claude in Chrome (böngésző-bővítmény).",
+ needs:"Chrome böngésző + a Claude in Chrome bővítmény telepítve.",
+ skill:null,
+ extra:"Melyik felülettel próbálnánk ki először",
+ note:"Ez a univerzális 'B-terv': ahol nincs MCP-connector, itt a Claude egyszerűen kattint/olvas/tölt fel helyetted."},
+
+{group:"admin", cat:"Fejlesztés", ico:"🧩", title:"Egyedi connector építése (ha nincs kész MCP)",
+ instr:"Ehhez az eszközhöz/felülethez nincs kész connector: [ESZKÖZ NEVE + URL]. Építs hozzá használható kapcsolatot. Ha van API: készíts egyedi MCP-connectort vagy scriptet a [API-KULCS]-csal. Ha nincs API: oldd meg böngésző-automatizációval (te kattintasz/olvasol/töltesz fel a Chrome-ban). Mondd meg, melyik út járható és pontosan mi kell hozzá.",
+ tool:"Code (egyedi MCP/script) vagy Claude in Chrome (API nélkül).",
+ needs:"Claude Code; vagy Claude in Chrome böngésző-hozzáférés. Ha van API: API-kulcs.",
+ skill:null,
+ extra:"Eszköz neve/URL, van-e API + API-kulcs/hozzáférés",
+ note:"3 út: van API → egyedi MCP/script (Code). Nincs API → böngésző-automatizáció (Chrome). Csak alkalmi → sima script."}
+];
+
+/* ================= A MÓD: mit adhatunk el az ügyfélnek ================= */
+const SELL = [
+{ico:"📞", name:"AI Caller (telefonos AI)",
+ signals:[
+  "„Nem érjük el időben a leadeket / mire visszahívjuk, már mást választott.”",
+  "Sok a kihagyott hívás, vagy munkaidőn kívül jön a megkeresés.",
+  "A recepció/értékesítő túlterhelt, ismétlődő hívásokkal megy az idő.",
+  "Gyenge a lead-utánkövetés, nincs azonnali reakció a webes érdeklődőre."
+ ],
+ pitch:"„Van egy AI-hangasszisztensünk, ami 30 másodpercen belül felhívja a beérkező leadet, kvalifikál és időpontot foglal — éjjel-nappal. A gyors reakció sokszor megduplázza a kontaktarányt.”",
+ value:"Gyorsabb lead-reakció = több megkötött üzlet ugyanabból a hirdetési költésből."},
+
+{ico:"🗂️", name:"Saját fejlesztésű mini CRM",
+ signals:[
+  "Excelben / füzetben / fejben vezetik a leadeket és ügyfeleket.",
+  "„Néha elveszik egy-egy érdeklődő” / nincs követés a megkeresések után.",
+  "Sok a kézi adatbevitel, ugyanazt többször beírják.",
+  "Nem látják, melyik hirdetésből / csatornából jött a lead."
+ ],
+ pitch:"„Tudunk egy könnyű, rátok szabott CRM-et építeni, ami egy helyre gyűjti a leadeket a hirdetésekből, jelzi a teendőket és mutatja, melyik kampány hozza a pénzt — nem egy nehéz, drága rendszer.”",
+ value:"Egyetlen lead sem vész el + tisztán látja, mi térül meg."},
+
+{ico:"🧮", name:"Kalkulátorok (ár-/ajánlatkalkulátor)",
+ signals:[
+  "Sok a „mennyibe kerül?” típusú megkeresés a hirdetésekből.",
+  "Egyedi/komplex árazás, hosszú ajánlatadási folyamat.",
+  "A landing page-en nincs azonnali árérzet → sok érdeklődő lemorzsolódik.",
+  "Az ügyfél szeretné előminősíteni a leadeket (komoly vevő-e)."
+ ],
+ pitch:"„Rakhatunk a weboldalra egy interaktív kalkulátort, ami azonnal árérzetet ad és közben elkéri az elérhetőséget — egyszerre lead magnet és előminősítő. A hirdetésből érkezőknél sokat dob a konverzión.”",
+ value:"Jobb minőségű leadek + magasabb konverzió ugyanannyi forgalomból."},
+
+{ico:"⚙️", name:"Riport- és folyamat-automatizáció",
+ signals:[
+  "Az ügyfél folyton kéri az aktuális számokat / sok a kézi riportozás.",
+  "Belső folyamatok Excelben + email-pingpongon futnak.",
+  "Ismétlődő, szabályalapú feladatok viszik az időt.",
+  "Több rendszer (hirdetés, CRM, számlázás) nincs összekötve."
+ ],
+ pitch:"„Ezt automatizálni tudjuk: a riport magától összeáll és kimegy, az adatok átfolynak a rendszerek között. Felszabadul a csapatotok ideje a tényleges munkára.”",
+ value:"Kevesebb manuális óra, kevesebb hiba, élő rálátás."},
+
+{ico:"💬", name:"AI chatbot / ügyfélszolgálat",
+ signals:[
+  "Ismétlődő kérdések terhelik az ügyfélszolgálatot / közösségi oldalt.",
+  "Lassú a válaszidő, sok az azonos tartalmú email/üzenet.",
+  "Munkaidőn kívül nincs, aki válaszoljon az érdeklődőnek.",
+  "GYIK, nyitvatartás, árak — ugyanazt magyarázzák naponta."
+ ],
+ pitch:"„Be tudunk állítani egy AI-asszisztenst a weboldalra/Messengerre, ami a saját tudásbázisotokból (dokumentumok, GYIK) azonnal válaszol, és a komoly érdeklődőt átadja nektek — 0-24-ben.”",
+ value:"Gyorsabb válasz, kevesebb terhelt munkatárs, több megfogott érdeklődő."},
+
+{ico:"🖥️", name:"AI-val épített landing page / weboldal",
+ signals:[
+  "Lassú, drága a weboldal-fejlesztés / hetekig húzódik egy LP.",
+  "Hirdetünk, de nincs dedikált, konverzióra hangolt landing page.",
+  "Kampányonként/ajánlatonként külön oldal kéne, de nincs rá kapacitás.",
+  "A jelenlegi oldal régi, lassú, mobilon rossz, gyenge a konverzió."
+ ],
+ pitch:"„AI-val gyorsan és olcsón építünk konverzióra hangolt landing page-t vagy akár teljes weboldalt — akár hirdetésenként külön oldalt, hogy minden kampány a saját üzenetére vigyen.”",
+ value:"Gyorsabb piacra jutás + magasabb konverzió, töredék költségen."},
+
+{ico:"📐", name:"Mérés / tracking beállítás mint szolgáltatás",
+ signals:[
+  "Bizonytalan, honnan jönnek a konverziók / „nem tudjuk, mi működik”.",
+  "iOS-veszteség, Consent Mode, GA4-átállás okozott zűrt.",
+  "A hirdetési riportok és a valóság (eladások) nem stimmelnek.",
+  "Új webshop/oldal indult, és nincs rendesen bekötve a mérés."
+ ],
+ pitch:"„Rendbe tesszük a mérést: GA4, szerveroldali tracking, Consent Mode, konverziók — hogy tiszta, megbízható adatból optimalizáljunk. Rossz mérésre nem lehet jó kampányt építeni.”",
+ value:"Megbízható adat = jobb döntés, kevesebb elégetett budget."},
+
+{ico:"📈", name:"White-label ügyfél-dashboard (eredmény-portál)",
+ signals:[
+  "Az ügyfél folyton rákérdez: „hogy állunk?”, „mennyi lead jött?”.",
+  "Több platformon (Google, Meta, web) szétszórt az adat.",
+  "A vezetőségnek/tulajnak kéne egy egyszerű, mindig friss kép.",
+  "Sok időt visz a havi PPT/riport összerakása."
+ ],
+ pitch:"„Adunk egy élő, a ti nevetekre szóló eredmény-portált, ahol bármikor látjátok az összes csatorna számait egy helyen, naprakészen — nem kell ránk várni egy riportért.”",
+ value:"Átláthatóság + bizalom, és nálunk kevesebb riport-meló."},
+
+{ico:"🗓️", name:"AI időpontfoglaló (inbound)",
+ signals:[
+  "Telefonon/üzenetben foglalnak időpontot, és sok a manuális egyeztetés.",
+  "Lecsúsznak hívásokról → elvesztett foglalás.",
+  "Tele a naptár ide-oda írogatással, dupla foglalások.",
+  "Szolgáltató/időpontos üzlet (szépségipar, egészségügy, szerviz)."
+ ],
+ pitch:"„Be tudunk állítani egy AI-asszisztenst, ami chaten/telefonon felveszi az érdeklődőt, egyeztet és magától beírja a naptárba a foglalást — 0-24-ben, hibázás nélkül.”",
+ value:"Egy elszalasztott foglalás sem vész el, és felszabadul a recepció."},
+
+{ico:"⭐", name:"AI review- / reputációkezelés",
+ signals:[
+  "Kevés vagy régi Google-értékelésük van / nem kérnek aktívan véleményt.",
+  "A negatív értékelésekre lassan vagy sehogy nem reagálnak.",
+  "Fontos nekik a helyi keresés / Google Cégprofil.",
+  "Sok értékelés jön, de nincs idő mindre válaszolni."
+ ],
+ pitch:"„Beállítunk egy folyamatot, ami értékelést kér a vevőktől, és AI-jal megírja a válaszokat minden véleményre — a jó hírnév magától épül és karbantartott marad.”",
+ value:"Több és jobb értékelés = több helyi bizalom és kattintás."},
+
+{ico:"🔎", name:"Belső AI-audit / automatizációs tanácsadás",
+ signals:[
+  "„Sok az adminisztráció / manuális munka nálunk.”",
+  "A csapat ismétlődő, repetitív feladatokkal tölti az időt.",
+  "Több eszközt használnak, de nincsenek összekötve.",
+  "Kíváncsiak az AI-ra, de nem tudják, hol kezdjék."
+ ],
+ pitch:"„Csinálunk egy AI-auditot a cégetekről: feltérképezzük, mely folyamatokat lehet AI-jal/automatizációval gyorsítani, és priorizált tervet adunk — mibe érdemes először belevágni.”",
+ value:"Konkrét, számokkal alátámasztott terv arról, hol nyernek időt és pénzt."}
+];
+
+/* ================= render ================= */
+let mode='ppc';
+const WORK_INTRO="Hogyan használd: <b>ne azt kérd, hogy írjon — azt kérd, hogy csinálja meg.</b> Ahol már van <b>⚡ Skill</b>, csak másold be a <code>/skill-nevet</code> (kattints a chipre vagy az ikonra), majd add meg a pár ügyfél-specifikus alapinfót — a többit önállóan elvégzi. <b>FONTOS:</b> a <code>/skill</code> csak akkor működik, ha az már telepítve van a fiókodban — a közös skilleket a Claude-admin tölti be cégszinten. A <b>🔌 Mi kell hozzá</b> a beállított connectort jelenti (vagy Claude in Chrome alternatívát) — nem a kolléga sima belépését! A <b>🧩 Hol csináld</b> mondja meg, melyik Claude kell: Cowork / Code / Chrome. A <b style='color:#33d29b'>✅ elérhető</b> = ehhez már kész, kiosztható eszközünk van (skill / prompt / bekötött connector), a <b>📎 Kész anyag</b> linkről egyből viheted. A <b>készül</b> jelölés: erre még épül a skill.";
+const INTRO={
+  ppc:"<b>PPC munka.</b> "+WORK_INTRO,
+  admin:"<b>Háttér &amp; admin.</b> Az AI-os munka beüzemelése és a nem-PPC feladatok (CRM, email, Slack, Drive, SEO/kreatív háttér, connector-beállítás). "+WORK_INTRO,
+  sell:"<b>Mit értékesíthetsz.</b> Hallgasd ezeket a jeleket az ügyfélhívásokon. Ha bármelyik felbukkan, vesd fel a „Hogyan vesd fel” mondatot — neked nem kell végigvinned az értékesítést, csak elültetni a magot és jelezni nekünk."
+};
+
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+const COPY_SVG='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+
+function renderWork(items){
+  const g=document.getElementById('grid');g.innerHTML='';
+  if(!items.length){g.appendChild(el('div','empty','Nincs találat. Próbálj más kulcsszót, vagy töröld a keresést.'));return;}
+  items.forEach(it=>{
+    const c=el('div','card');
+    c.appendChild(el('span','cat',it.cat));
+    const badge=(it.live?' <span class="live-badge">✅ elérhető</span>':'')+(it.auto?' <span class="auto-badge">🔁 automata</span>':'');
+    c.appendChild(el('h3',null,`<span class="ico">${it.ico}</span><span>${it.title}${badge}</span>`));
+    const box=el('div','instr');
+    box.appendChild(el('span','lab',it.auto?'⚙️ Egyszer állítsd be — utána magától fut':'📋 Ezt kérd a Claude-tól'));
+    box.appendChild(el('p',null,escapeHtml(it.instr)));
+    const btn=el('button','copy',it.auto?'📋 Beállító instrukció másolása':'📋 Instrukció másolása');
+    btn.onclick=()=>copy(btn,it.instr);
+    box.appendChild(btn);
+    c.appendChild(box);
+    const mw=el('div','meta-wrap');
+    if(it.auto)mw.appendChild(el('div','meta',`<span class="k">🔁 Mikor fut</span><b>${escapeHtml(it.auto)}</b>`));
+    // Skill – copy-zható /név chip vagy "készül"
+    const sm=el('div','meta');
+    sm.appendChild(el('span','k','⚡ Skill'));
+    if(it.skill){
+      const chip=el('span','skill-chip',escapeHtml(it.skill));
+      chip.title='Kattints a másoláshoz';
+      const ico=el('button','copy-ico');ico.innerHTML=COPY_SVG;ico.title='Másolás';
+      chip.onclick=()=>copy(ico,it.skill);
+      ico.onclick=()=>copy(ico,it.skill);
+      sm.appendChild(chip);sm.appendChild(ico);
+    }else{
+      sm.appendChild(el('span','soon','készül'));
+    }
+    mw.appendChild(sm);
+    if(it.resource){
+      const rm=el('div','meta');rm.appendChild(el('span','k','📎 Kész anyag'));
+      const a=el('a','res-link',escapeHtml(it.resource.label)+' ↗');a.href=it.resource.url;a.target='_blank';
+      rm.appendChild(a);mw.appendChild(rm);
+    }
+    if(it.tool)mw.appendChild(el('div','meta',`<span class="k">🧩 Hol csináld</span><b>${escapeHtml(it.tool)}</b>`));
+    mw.appendChild(el('div','meta',`<span class="k">🔌 Mi kell hozzá</span>${escapeHtml(it.needs)}`));
+    if(it.setup){
+      const sl=el('div','meta');sl.appendChild(el('span','k','🛠️ Beállítás'));
+      const a=el('a','jump','→ így állítsd be: '+it.setup);
+      a.onclick=()=>jumpTo('admin',it.setup);
+      sl.appendChild(a);mw.appendChild(sl);
+    }
+    if(it.extra)mw.appendChild(el('div','meta',`<span class="k">➕ Add meg pluszban</span>${escapeHtml(it.extra)}`));
+    if(it.note)mw.appendChild(el('div','meta',`<span class="k">ℹ️ Megjegyzés</span>${escapeHtml(it.note)}`));
+    c.appendChild(mw);
+    g.appendChild(c);
+  });
+}
+
+function renderSell(items){
+  const g=document.getElementById('grid');g.innerHTML='';
+  if(!items.length){g.appendChild(el('div','empty','Nincs találat. Próbálj más kulcsszót, vagy töröld a keresést.'));return;}
+  items.forEach(it=>{
+    const c=el('div','card');
+    c.appendChild(el('h3',null,`<span class="ico">${it.ico}</span><span>${it.name}</span>`));
+    c.appendChild(el('span','cat','Milyen jelre figyelj'));
+    const ul=el('ul','signals');
+    it.signals.forEach(s=>ul.appendChild(el('li',null,escapeHtml(s))));
+    c.appendChild(ul);
+    const pitch=el('div','pitch');
+    pitch.appendChild(el('span','lab','Hogyan vesd fel'));
+    pitch.appendChild(el('span',null,escapeHtml(it.pitch)));
+    const pbtn=el('button','copy','📋 Mondat másolása');
+    pbtn.style.marginTop='9px';
+    pbtn.onclick=()=>copy(pbtn,it.pitch);
+    pitch.appendChild(el('div',null,''));pitch.appendChild(pbtn);
+    c.appendChild(pitch);
+    c.appendChild(el('div','value','💰 '+it.value));
+    g.appendChild(c);
+  });
+}
+
+function copy(btn,text){
+  const flash=()=>{
+    const old=btn.innerHTML;btn.classList.add('done');
+    btn.innerHTML = btn.classList.contains('copy-ico') ? '✓' : '✓ Kimásolva';
+    setTimeout(()=>{btn.innerHTML=old;btn.classList.remove('done');},1300);
+  };
+  const fallback=()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.setAttribute('readonly','');
+    ta.style.position='fixed';ta.style.top='-1000px';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    let ok=false;try{ok=document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);
+    if(ok){flash();}else{window.prompt('Másold ki: Ctrl/Cmd+C, majd Enter',text);}
+  };
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(flash).catch(fallback);
+    }else{fallback();}
+  }catch(e){fallback();}
+}
+
+function filterAndRender(){
+  const q=document.getElementById('search').value.toLowerCase().trim();
+  if(mode==='sell'){
+    const items=SELL.filter(it=>!q||(it.name+it.signals.join(' ')+it.pitch+it.value).toLowerCase().includes(q));
+    document.getElementById('hint').textContent=`${items.length} eladható megoldás · figyeld a jeleket az ügyfélnél`;
+    renderSell(items);
+  }else{
+    const items=WORK.filter(it=>it.group===mode && (!q||(it.title+it.cat+it.instr+it.needs+(it.extra||'')+(it.skill||'')+(it.note||'')).toLowerCase().includes(q)));
+    document.getElementById('hint').textContent=`${items.length} feladat, amit a Claude elvégez helyetted`;
+    renderWork(items);
+  }
+}
+
+const PH={
+  ppc:'Keress PPC-feladatra… (pl. mérés, riport, anomália, kulcsszó)',
+  admin:'Keress admin-feladatra… (pl. CRM, email, Slack, Drive, connector)',
+  sell:'Keress jelre/megoldásra… (pl. lead, telefon, weboldal, foglalás)'
+};
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===m));
+  document.getElementById('intro').innerHTML=INTRO[m];
+  document.getElementById('search').value='';
+  document.getElementById('search').placeholder=PH[m];
+  filterAndRender();
+}
+
+function jumpTo(m,title){
+  setMode(m);
+  const s=document.getElementById('search');
+  s.value=title;filterAndRender();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.getElementById('search').addEventListener('input',filterAndRender);
+setMode('ppc');
+</script>
+</body>
+</html>
